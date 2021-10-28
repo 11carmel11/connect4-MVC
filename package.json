@@ -1,0 +1,20 @@
+{
+  "name": "connect4-mvc",
+  "version": "1.0.0",
+  "description": "- **(Model-View-Controller)** is a pattern in software design commonly used to implement user interfaces, data, and controlling logic.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/11carmel11/connect4-MVC.git"
+  },
+  "keywords": [],
+  "author": "carmel-cohen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/11carmel11/connect4-MVC/issues"
+  },
+  "homepage": "https://github.com/11carmel11/connect4-MVC#readme"
+}
