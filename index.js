@@ -1,204 +1,279 @@
-const root = document.getElementById("root");
+// const root = document.getElementById("root");
 
-class Event {
-  constructor() {
-    this.listeners = [];
-  }
-
-  addListener(listener) {
-    this.listeners.push(listener);
-  }
-
-  trigger(params) {
-    this.listeners.forEach((listener) => {
-      listener(params);
-    });
-  }
-}
-
-class Model {
-  constructor() {
-    this.won = false;
-    this.currentPlayer = "red";
-    this.board = new Array(7).fill(new Array(7).fill()); //[row][column];
-  }
-  play(column) {
-    for (let i = 0; i < 7; i++) {
-      if (!this.board[column][i]) {
-        this.board[column][i] = this.currentPlayer;
-        this.won = this.win(column, i);
-        if (this.won) {
-          return this.won;
-        }
-        this.changePlayer();
-        return this.board;
-      }
-    }
-  }
-  win(column, row) {
-    const tested = this.board[column][row];
-    let counter = 1;
-    for (let i = 1; i < 4; i++) {
-      let flag = false;
-      if (this.board[column][row - i] === tested) {
-        counter++;
-      } else {
-        flag = true;
-      }
-      if (flag) break;
-    }
-    if (counter === 4) {
-      this.won = true;
-    } else {
-      counter = 1;
-      for (let i = 1; i < 4; i++) {
-        let flag = false;
-        if (this.board[column - i][row] === tested) {
-          counter++;
-        } else {
-          flag = true;
-        }
-        if (flag) break;
-      }
-      for (let i = 1; i < 4; i++) {
-        let flag = false;
-        if (this.board[column + i][row] === tested) {
-          counter++;
-        } else {
-          flag = true;
-        }
-        if (flag) break;
-      }
-      if (counter === 4) {
-        this.won = true;
-      } else {
-        counter = 1;
-        for (let i = 1; i < 4; i++) {
-          let flag = false;
-          if (this.board[column - i][row - i] === tested) {
-            counter++;
-          } else {
-            flag = true;
-          }
-          if (flag) break;
-        }
-        for (let i = 1; i < 4; i++) {
-          let flag = false;
-          if (this.board[column + i][row + i] === tested) {
-            counter++;
-          } else {
-            flag = true;
-          }
-          if (flag) break;
-        }
-        if (counter === 4) {
-          this.won = true;
-        } else {
-          counter = 1;
-          for (let i = 1; i < 4; i++) {
-            let flag = false;
-            if (this.board[column - i][row + i] === tested) {
-              counter++;
-            } else {
-              flag = true;
+class model{
+    #board
+    constructor(){
+        this.#board=[[],[],[],[],[],[],[]];
+        for (let i = 0; i < 7; i++) {
+            for (let j = 0; j < 7; j++) {
+            this.#board[i][j]={fill:'N',row:i,line:j};                      
             }
-            if (flag) break;
-          }
-          for (let i = 1; i < 4; i++) {
-            let flag = false;
-            if (this.board[column + i][row - i] === tested) {
-              counter++;
-            } else {
-              flag = true;
+        }
+        console.log(this.#board);
+    }
+    addKey(color,row){
+        let line;
+        for (let i = 0; i < 7; i++) {
+            if(this.#board[row][i].fill=='N')
+            {
+                this.#board[row][i].fill=color; 
+                line=i;
+                i=8;           
             }
-            if (flag) break;
-          }
-          if (counter === 4) {
-            this.won = true;
-          }
         }
-      }
+        let answer=this.checkWin(row,line,color);
+        if(answer!=false)
+            return  answer
+        return this.#board; 
+    }
+    checkWin(row,line,color){
+        console.log(`row:${row} line:${line} ${color}`);
+        let answer=this.checkRow(row,line,color);
+        if(typeof  answer === 'string')
+        {
+            return answer;
+        }
+        answer =this.checkLine(row,line,color);
+        if(typeof  answer === 'string')
+        {
+            return answer;
+        }
+        answer =this.checkLeftSlant(row,line,color);
+        if(typeof  answer === 'string')
+        {
+            return answer;
+        }
+        answer =this.checkRightSlant(row,line,color);
+        if(typeof  answer === 'string')
+        {
+            return answer;
+        }
+        return false;
+        
+    }
+    newGame(){
+        this.#board=[[],[],[],[],[],[],[]];
+        for (let i = 0; i < 7; i++) {
+            for (let j = 0; j < 7; j++) {
+            this.#board[i][j]={fill: 'N',row:i,line:j};                      
+            }
+        }
+        return this.#board;
+    }
+    checkRow(row,line,color){
+        let count=0;
+        for (let i = 0; i < 7; i++) {
+            if(i!=0){
+                if (`${this.#board[row][i-1].fill}`==color&&`${this.#board[row][i].fill}`==color) 
+                {
+                    count++;
+                    if(count==3)
+                        i=8;
+                }
+                else
+                    count=0;
+            }
+        }
+        if(count==3)
+            return `${color} win`;
+        else
+            return false;
+    }
+    checkLine(row,line,color){
+        let count=0;
+        for (let i = 0; i < 7; i++) {
+            if(i!=0){
+                if (`${this.#board[i-1][line].fill}`==color&&`${this.#board[i][line].fill}`==color) 
+                {
+                    count++;
+                    if(count==3)
+                        i=8;
+                }   
+                else
+                count=0;
+            }
+        }
+        if(count==3)
+            return `${color} win`;
+        else
+            return false;
+    }
+    checkLeftSlant(row,line,color){
+        let leftR=row,leftL=line,count=0;
+        while(leftR!=0&&leftL!=0)
+        {
+            leftR--;
+            leftL--;
+        }
+        for (let i = 0; i < 7; i++) {
+            if(i!=0&&leftR<7&&leftL<7){
+                if (`${this.#board[leftR][leftL].fill}`==color/* &&`${this.#board[i][line].fill}`==color */) 
+                {
+                    count++;
+                    if(count==4)
+                        i=8;
+                }   
+                else
+                    count=0;
+                leftR++;
+                leftL++;
+            }
+        }
+        if(count==4)
+            return `${color} win`;
+        else
+            return false;
+    }
+    checkRightSlant(row,line,color){
+        let leftR=row,leftL=line,count=0;
+        while(leftR<6&&leftL!=0)
+        {
+            leftR++;
+            leftL--;
+        }   
+        console.log(leftR,leftL);
+        for (let i = 0; i < 7; i++) {
+            if(i!=0&&leftR>=0&&leftL<7){
+                if (`${this.#board[leftR][leftL].fill}`==color/* &&`${this.#board[i][line].fill}`==color */) 
+                {
+                    count++;
+                    if(count==4)
+                    i=8;
+                    console.log(count);
+                    console.log(leftR,leftL);
+                }   
+                else
+                    count=0;
+                leftR--;
+                leftL++;
+            }
+        }   
+        if(count==4)
+            return `${color} win`;
+        return false;
     }
 
-    return this.won;
-  }
-  changePlayer() {
-    this.currentPlayer === "red"
-      ? (this.currentPlayer = "blue")
-      : (this.currentPlayer = "red");
-  }
 }
-class View {
-  constructor(arr) {
-    this.gameBoard = arr;
-    this.currentPlayer = "red";
-  }
-  creatingBoard(arr) {
-    root.innerHTML = "";
-    const board = document.createElement("div");
-    board.id = "board";
-    let rowCounter = -1;
-    let columnCounter = -1;
-    for (let line of arr) {
-      const row = document.createElement("tr");
-      rowCounter++;
-      columnCounter = -1;
-      for (let column of line) {
-        columnCounter++;
-        const cell = document.createElement("td");
-        cell.dataset.column = columnCounter;
-        cell.dataset.row = rowCounter;
-
-        if (column === "blue" || column === "red") {
-          cell.style.backgroundColor = column;
+class view{
+    #turn
+    constructor(){
+        this.#turn='R';
+        const root=document.getElementById('header');
+        root.append(this.createElement('h1',[],['display-1','d-flex', 'justify-content-center'],{},'Connect 4'))
+        let grid=this.createElement('div',[],["container","board"]);
+        grid.id='grid';
+        root.append(grid);
+        for (let i = 0; i < 7; i++) {
+            let row=this.createElement('div',[],["row"]);
+            row.id=`line ${6-i}`;
+            for (let j = 0; j < 7; j++) {
+                let column=this.createElement('div',[],['col'],{},``);
+                column.id=j;
+                if(i==0)
+                    this.addColorChange(column);
+                row.prepend(column);           
+            }
+            grid.append(row)
         }
-        cell.classList.add("cell");
-        cell.onclick = (event) => {
-          const target = event.target;
-          const tur = target.dataset.column;
-          const ro = target.dataset.row;
-          console.log(ro, tur);
-          this.paintCell(target, ro, tur);
-        };
-        row.append(cell);
-      }
-      board.append(row);
+        console.log(grid)
     }
-    root.append(board);
-  }
-  paintCell(target, row, column) {
-    // target.style.backgroundColor = this.currentPlayer
-    // this.gameBoard[0] = this.currentPlayer;
-    // this.gameBoard[0][0] = this.currentPlayer;
-    this.gameBoard[row][column] = this.currentPlayer;
-    this.changePlayer();
-    console.log(this.gameBoard);
-    this.creatingBoard(this.gameBoard);
-    return;
-    // for (let i = 6; i <= 0; i++) {
-    //   if (!this.gameBoard[i][column]) {
-    //     console.log(column);
-    //     this.gameBoard[i][column] = this.currentPlayer;
-    //     this.changePlayer();
-    //     console.log(this.gameBoard);
-    //     this.creatingBoard(this.gameBoard);
-    //     return;
-    //   }
-    // }
-  }
-  changePlayer() {
-    this.currentPlayer === "red"
-      ? (this.currentPlayer = "blue")
-      : (this.currentPlayer = "red");
-    const currentPlayerShower = document.getElementById("current player");
-    currentPlayerShower.innerText = `playing: ${this.currentPlayer} player`;
-  }
+    addColorChange(col){
+        col.addEventListener('mouseover',(e)=>{
+            e.target.style.background='white';
+        });
+        col.addEventListener('mouseout',(e)=>{
+            e.target.style.background='darkgrey';
+        });
+    }
+    addMove(handleTurn){
+        document.getElementById(`line 6`).addEventListener('click',(e)=>{
+            if(e.target.id!=undefined)
+            {
+                handleTurn(this.#turn,e.target.id);
+                if(this.#turn=='R')
+                this.#turn='O';
+                else
+                this.#turn='R';
+            }
+        })
+    }
+    renderDisplay(newBoard){
+        let grid=document.getElementById('grid');
+        grid.innerHTML=''
+        for (let i = 0; i < 7; i++) {
+            let line=this.createElement('div',[],["row"]);
+            line.id=`line ${6-i}`;
+            for (let j = 0; j < 7; j++) {
+                let column=this.createElement('div',[],['col'],{},``);
+                column.id=j;
+                column.classList.add(`${newBoard[j][6-i].fill}`)
+                if(i==0)
+                    this.addColorChange(column);
+                line.prepend(column);           
+            }
+            grid.append(line)
+        }
+    }
+    renderWin(winner){
+        let p = this.createElement('h4',[],['display-4','d-flex', 'justify-content-center'],{},winner);
+        grid.innerHTML=''
+        grid.append(p);
+        let newBtn=this.createElement('button',[],['btn','btn-outline-info','d-flex', 'justify-content-center'],{type:'button'},'Play again!')
+        newBtn.id='rematch';
+        grid.append(newBtn);
+    }
+    rematch(handleRematch){
+        document.getElementById('rematch').addEventListener('click',(e)=>{
+            handleRematch();
+        })
+    }
+    createElement(tagName ,children = [], classes = [], attributes = {},innerText) {
+    const el = document.createElement(tagName);
+        // Children
+        for(const child of children) {
+            el.append(child);
+        }
+        // Classes
+        for(const cls of classes) {
+            el.classList.add(cls);
+        }
+        // Attributes
+        for (const attr in attributes) {
+            el.setAttribute(attr, attributes[attr]);
+        }
+        if(innerText!=undefined)
+        el.innerText=innerText;
+        return el;
+    }
+
 }
-class Controller {
-  constructor() {
-    this.model = new Model();
-    this.view = new View(this.model.board);
-    this.view.creatingBoard(this.model.board);
-  }
+class controller{
+        #model;
+        #view;
+        constructor(view,model){
+            this.#view=view;    
+            this.#model=model;
+            this.#view.addMove(this.#handleTurn);
+    }
+    #handleTurn=(color,id)=>{
+        let newBoard=this.#model.addKey(color,id);
+        if(!(typeof newBoard === 'string') )
+        {
+            this.#view.renderDisplay(newBoard);
+            this.#view.addMove(this.#handleTurn);
+        }
+        else
+        {
+            this.#view.renderWin(newBoard);
+            this.#view.rematch(this.#playAgain)
+        }
+    }
+    #playAgain=()=>{
+        let newBoard=this.#model.newGame();
+        this.#view.renderDisplay(newBoard);
+        this.#view.addMove(this.#handleTurn);
+    }
 }
-const app = new Controller();
+const con = new controller(new view(),new model())
+
+
